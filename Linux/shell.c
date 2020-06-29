@@ -27,21 +27,17 @@ int argtok(const char *args[], char *cmd[], char *fdp[]) {
   for (; *ar != NULL; ar++) {
     if (strcmp(*ar, "<") == 0) {
       ar++;
-      printf("DBG: %s\n", *ar);
       fdp[0] = *ar;
       fl |= ARGT_FD_FILEIN;
     } else if (strcmp(*ar, ">") == 0) {
       ar++;
-      printf("DBG: %s\n", *ar);
       fdp[1] = *ar;
       fl |= ARGT_FD_FILEOUT;
     } else if (strcmp(*ar, "|") == 0) {
       ar++;
-      printf("DBG: %s\n", *ar);
       fl |= ARGT_FD_PIPEOUT;
       break;
     } else {
-      printf("DBG: %s\n", *ar);
       cmd[i++] = *ar;
     }
   }
@@ -53,17 +49,12 @@ int exec_p(const char *cm[], int flag, int p2c[2], int c2p[2]) {
   char cp[PATH_MAX];
   pid_t pid;
 
-  for (int i = 0; cm[i] != NULL; i++) {
-    printf("DBG2: %s\n", cm[i]);
-  }
-
   strcpy(cp, "/bin/");
   strcat(cp, cm[0]);
   if ((pid = fork()) != 0) return pid;
   close(p2c[1]);
   close(c2p[0]);
   if (flag & EXEC_FD_STDIN) {
-    printf("DBG: STDIN\n");
     close(p2c[0]);
   } else {
     close(0);
@@ -73,7 +64,6 @@ int exec_p(const char *cm[], int flag, int p2c[2], int c2p[2]) {
     }
   }
   if (flag & EXEC_FD_STDOUT) {
-    printf("DBG: STDOUT\n");
     close(c2p[1]);
   } else {
     close(1);
@@ -91,7 +81,6 @@ int rdt_fdw(int fdf, int fdo, char *fdp) {
   int cc;
 
   if (fdf & ARGT_FD_FILEIN) {
-    printf("###filein %s\n", fdp);
     if ((ffd = open(fdp, O_RDONLY)) < 0) {
       fprintf(stderr, "Cannot open: %s\n", fdp);
       return -1;
@@ -116,9 +105,7 @@ int rdt_fdr(int fdf, int fdi, int fdo, char *fdp) {
     }
     while ((cc = read(fdi, buf, sizeof(buf))) != 0) {
       write(ffd, buf, cc);
-      printf("DBG: LOOP\n");
     }
-    printf("DBG: WE\n");
     close(ffd);
     if (fdf & ARGT_FD_PIPEOUT) {
       if ((ffd = open(fdp, O_RDONLY)) < 0) {
@@ -141,15 +128,14 @@ int rdt_fdr(int fdf, int fdi, int fdo, char *fdp) {
 int main() {
   char in[ARG_MAX];
   char *ar[1000];
-  int i, l;
+  int i;
   int status;
   char *cm[100];
   char *fdp[2];
   char *fdpo;
-  char cp[PATH_MAX];
   int p2c[2];
   int c2p[2];
-  int fdi, fdo;
+  int fdi;
   int fdf, fdft;
   int rdf;
 
@@ -195,12 +181,9 @@ int main() {
     if (!(fdf & ARGT_FD_PIPEOUT)) {
       rdt_fdr(fdf, c2p[0], 0, fdp[1]);
       close(c2p[0]);
-      printf("DBG: wait\n");
       wait(&status);
-      printf("DBG: waitout\n");
       continue;
     }
-    printf("DBG3:\n");
     fdft = fdf;
     fdpo = fdp[1];
     while ((fdf = argtok(NULL, cm, fdp)) != -1) {
