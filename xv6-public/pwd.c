@@ -11,6 +11,7 @@ int rp_to_ap(char *rp, char *ap) {
   struct dirent de;
   int fd;
   int le;
+  int rv;
 
   if (stat(rp, &st) < 0) return -1;
   strcpy(rp + strlen(rp), "/..");
@@ -24,12 +25,12 @@ int rp_to_ap(char *rp, char *ap) {
   }
   close(fd);
   if (strcmp(de.name, ".") == 0 || strcmp(de.name, "..") == 0) {
-    strcpy(ap, "");
-    return 0;
+    strcpy(ap, "/");
+    return 1;
   }
-  if (rp_to_ap(rp, ap) != 0) return -1;
+  if ((rv = rp_to_ap(rp, ap)) < 0) return -1;
   le = strlen(ap);
-  strcpy(ap + le++, "/");
+  if (rv == 0) strcpy(ap + le++, "/");
   strcpy(ap + le, de.name);
   return 0;
 }
@@ -38,7 +39,7 @@ int main() {
   char rp[MAX_PATH] = ".";
   char ap[MAX_PATH] = "";
 
-  if (rp_to_ap(rp, ap) != 0) {
+  if (rp_to_ap(rp, ap) < 0) {
     printf(2, "rtp error\n");
     exit();
   }
