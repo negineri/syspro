@@ -184,6 +184,7 @@ UPROGS=\
 	_typecho\
 	_helloworld\
 	_prdir\
+	_pwd\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
